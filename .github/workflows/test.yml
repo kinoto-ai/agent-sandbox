@@ -1,0 +1,113 @@
+name: Test Images
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test-proxy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        level: [zerotrust, restrictive, balanced, permissive]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test proxy
+        run: |
+          docker build -t proxy-${{ matrix.level }} \
+            --build-arg SECURITY_LEVEL=${{ matrix.level }} \
+            ./proxy
+
+          docker run --rm proxy-${{ matrix.level }} sh -c '
+            which sshd && which tmux && which docker && which iptables
+          '
+
+  test-proxy-sandbox:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build proxy
+        run: docker build -t proxy-balanced --build-arg SECURITY_LEVEL=balanced ./proxy
+
+      - name: Test iptables rules applied
+        run: |
+          docker run --rm --cap-add=NET_ADMIN \
+            -e SECURITY_LEVEL=balanced \
+            -e USER_CONTAINER_NAME=dummy \
+            --entrypoint sh proxy-balanced -c '
+              # Source the iptables logic
+              . /entrypoint.sh 2>/dev/null || true
+
+              # Check rules exist
+              iptables -L OUTPUT -n | grep -q DROP && echo "Default DROP policy set"
+            '
+
+  test-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - assistant: claude
+            binary: claude
+          - assistant: gemini
+            binary: gemini
+          - assistant: codex
+            binary: codex
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and test runtime
+        run: |
+          docker build -t runtime-${{ matrix.assistant }} ./runtime/${{ matrix.assistant }}
+
+          docker run --rm runtime-${{ matrix.assistant }} sh -c '
+            which ssh && which node && which ${{ matrix.binary }}
+          '
+
+      - name: Test --help
+        run: |
+          docker run --rm runtime-${{ matrix.assistant }} \
+            ${{ matrix.binary }} --help || true
+
+  test-integration:
+    runs-on: ubuntu-latest
+    needs: [test-proxy, test-runtime]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Integration test
+        run: |
+          docker build -t proxy --build-arg SECURITY_LEVEL=balanced ./proxy
+
+          # Generate key
+          ssh-keygen -t ed25519 -f /tmp/key -N "" -q
+
+          # Start proxy
+          docker network create testnet
+          docker run -d --name kinoto-user --network testnet alpine sleep 300
+          docker run -d --name kinoto-proxy --network testnet \
+            --cap-add=NET_ADMIN \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -e AUTHORIZED_KEY="$(cat /tmp/key.pub)" \
+            -e USER_CONTAINER_NAME=kinoto-user \
+            proxy
+
+          sleep 3
+
+          # Test SSH
+          docker run --rm --network testnet \
+            -v /tmp/key:/key:ro \
+            alpine sh -c '
+              apk add -q openssh-client
+              chmod 600 /key
+              ssh -i /key -o StrictHostKeyChecking=no root@kinoto-proxy echo ok
+            '
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f kinoto-proxy kinoto-user 2>/dev/null || true
+          docker network rm testnet 2>/dev/null || true

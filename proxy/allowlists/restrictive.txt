@@ -1,0 +1,26 @@
+# Restrictive: AI providers + localhost
+
+# Anthropic (Claude)
+api.anthropic.com
+console.anthropic.com
+claude.ai
+api.claude.ai
+
+# Statsig (feature flags for Claude Code)
+api.statsig.com
+statsigapi.net
+api.statsigapi.net
+
+# OpenAI (Codex)
+api.openai.com
+platform.openai.com
+chatgpt.com
+chat.openai.com
+
+# Google (Gemini)
+generativelanguage.googleapis.com
+aiplatform.googleapis.com
+gemini.google.com
+
+# Localhost
+host.docker.internal

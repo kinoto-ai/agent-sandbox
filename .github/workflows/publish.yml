@@ -1,0 +1,77 @@
+name: Build and Publish Images
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build-proxy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        level: [zerotrust, restrictive, balanced, permissive]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/agent-proxy-${{ matrix.level }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./proxy
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            SECURITY_LEVEL=${{ matrix.level }}
+
+  build-runtime:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        assistant: [claude, gemini, codex]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/agent-runtime-${{ matrix.assistant }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest
+
+      - uses: docker/build-push-action@v5
+        with:
+          context: ./runtime/${{ matrix.assistant }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
