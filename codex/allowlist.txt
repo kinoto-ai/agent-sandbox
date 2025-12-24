@@ -1,0 +1,5 @@
+# AI API allowlist (Codex/OpenAI)
+api.openai.com
+platform.openai.com
+chatgpt.com
+chat.openai.com

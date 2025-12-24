@@ -1,0 +1,4 @@
+# AI API allowlist (Gemini)
+generativelanguage.googleapis.com
+aiplatform.googleapis.com
+gemini.google.com

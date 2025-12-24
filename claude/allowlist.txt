@@ -1,0 +1,10 @@
+# AI API allowlist (Claude)
+api.anthropic.com
+console.anthropic.com
+claude.ai
+api.claude.ai
+
+# Statsig (Claude Code feature flags)
+api.statsig.com
+statsigapi.net
+api.statsigapi.net
