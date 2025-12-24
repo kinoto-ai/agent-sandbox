@@ -1,5 +1,7 @@
 FROM alpine:3.21
 
+LABEL com.kinoto.agent.type="base"
+
 RUN apk add --no-cache \
     tmux \
     iptables \

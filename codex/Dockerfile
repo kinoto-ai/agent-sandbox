@@ -1,6 +1,8 @@
 ARG BASE_IMAGE=agent-base
 FROM ${BASE_IMAGE}
 
+LABEL com.kinoto.agent.name="codex"
+
 RUN apk add --no-cache \
     nodejs \
     npm

@@ -72,6 +72,9 @@ Extend `agent-base` to create your own agent image:
 ARG BASE_IMAGE=ghcr.io/kinoto-ai/agent-base:latest
 FROM ${BASE_IMAGE}
 
+# Required: Set agent name for discovery
+LABEL com.kinoto.agent.name="my-agent"
+
 # Install your agent CLI
 RUN apk add --no-cache nodejs npm
 RUN npm install -g your-agent-cli
@@ -93,6 +96,19 @@ Build and run:
 ```bash
 docker build -t my-agent .
 docker run -it --cap-add=NET_ADMIN my-agent
+```
+
+### Discovering Agents
+
+List all available agent images:
+```bash
+docker images --filter "label=com.kinoto.agent.name" \
+  --format "{{.Repository}}:{{.Tag}} → {{index .Labels \"com.kinoto.agent.name\"}}"
+```
+
+Get agent name from an image:
+```bash
+docker inspect IMAGE --format '{{index .Config.Labels "com.kinoto.agent.name"}}'
 ```
 
 ## How It Works
