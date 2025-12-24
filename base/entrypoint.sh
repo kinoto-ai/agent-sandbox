@@ -47,17 +47,18 @@ apply_iptables() {
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
 # Drop privileges and run assistant as unprivileged user
-SESSION_NAME="${TMUX_SESSION:-kinoto}"
+WRAPPED_CMD="sh -c '${ASSISTANT_CMD}; tmux detach'"
 
-# If no TTY, run command directly (for testing/CI)
 if [ ! -t 0 ]; then
     exec su-exec agent $ASSISTANT_CMD
 fi
 
-if su-exec agent tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
-    # Session exists, create new window
-    exec su-exec agent tmux new-window -t "$SESSION_NAME" "$ASSISTANT_CMD"
+if su-exec agent tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    PANE_DEAD=$(su-exec agent tmux display-message -p -t "$TMUX_SESSION" '#{pane_dead}')
+    if [ "$PANE_DEAD" = "1" ]; then
+        su-exec agent tmux respawn-pane -t "$TMUX_SESSION" "$WRAPPED_CMD"
+    fi
+    exec su-exec agent tmux attach -t "$TMUX_SESSION"
 else
-    # New session
-    exec su-exec agent tmux new-session -s "$SESSION_NAME" "$ASSISTANT_CMD"
+    exec su-exec agent tmux new-session -s "$TMUX_SESSION" "$WRAPPED_CMD"
 fi
