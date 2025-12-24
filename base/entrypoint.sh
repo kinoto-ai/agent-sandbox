@@ -46,18 +46,18 @@ apply_iptables() {
 # Apply network rules if we have CAP_NET_ADMIN
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
-# Start or attach to tmux session
+# Drop privileges and run assistant as unprivileged user
 SESSION_NAME="${TMUX_SESSION:-kinoto}"
 
 # If no TTY, run command directly (for testing/CI)
 if [ ! -t 0 ]; then
-    exec $ASSISTANT_CMD
+    exec su-exec agent $ASSISTANT_CMD
 fi
 
-if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+if su-exec agent tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
     # Session exists, create new window
-    exec tmux new-window -t "$SESSION_NAME" "$ASSISTANT_CMD"
+    exec su-exec agent tmux new-window -t "$SESSION_NAME" "$ASSISTANT_CMD"
 else
     # New session
-    exec tmux new-session -s "$SESSION_NAME" "$ASSISTANT_CMD"
+    exec su-exec agent tmux new-session -s "$SESSION_NAME" "$ASSISTANT_CMD"
 fi

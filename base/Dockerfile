@@ -6,7 +6,11 @@ RUN apk add --no-cache \
     tmux \
     iptables \
     ip6tables \
-    bash
+    bash \
+    su-exec
+
+# Create unprivileged user for running assistant
+RUN adduser -D -h /home/agent agent
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
