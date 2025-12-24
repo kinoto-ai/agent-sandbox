@@ -3,12 +3,10 @@ FROM ${BASE_IMAGE}
 
 LABEL com.kinoto.agent.name="claude"
 
-RUN apk add --no-cache \
-    nodejs \
-    npm
-
 # Install Claude Code
-RUN npm install -g @anthropic-ai/claude-code
+RUN apk add --no-cache nodejs npm \
+    && npm install -g @anthropic-ai/claude-code \
+    && rm -rf /root/.npm /tmp/*
 
 COPY allowlist.txt /etc/kinoto/allowlist.txt
 

@@ -3,18 +3,11 @@ FROM ${BASE_IMAGE}
 
 LABEL com.kinoto.agent.name="gemini"
 
-RUN apk add --no-cache \
-    nodejs \
-    npm \
-    python3 \
-    make \
-    g++
-
-# Install Gemini CLI (needs build tools for native modules)
-RUN npm install -g @google/gemini-cli
-
-# Remove build deps to reduce size
-RUN apk del python3 make g++
+# Install Gemini CLI (needs build tools for native modules, removed after)
+RUN apk add --no-cache nodejs npm python3 make g++ \
+    && npm install -g @google/gemini-cli \
+    && apk del python3 make g++ \
+    && rm -rf /root/.npm /tmp/*
 
 COPY allowlist.txt /etc/kinoto/allowlist.txt
 
