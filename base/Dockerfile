@@ -3,7 +3,7 @@ FROM alpine:3.21
 LABEL com.kinoto.agent.type="base"
 
 RUN apk add --no-cache \
-    tmux \
+    abduco \
     iptables \
     ip6tables \
     bash \
@@ -20,10 +20,6 @@ RUN mkdir -p /etc/kinoto/allowlist.d
 
 # Terminal settings
 ENV TERM=xterm-256color
-
-# tmux configuration
-RUN printf "set -g status off\nset -g remain-on-exit on\n" > /home/agent/.tmux.conf && \
-    chown agent:agent /home/agent/.tmux.conf
 
 # Default command (override in derived images)
 ENV ASSISTANT_CMD="sh"

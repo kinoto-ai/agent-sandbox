@@ -20,7 +20,7 @@ test: build
 	@for assistant in $(ASSISTANTS); do \
 		printf "  $$assistant: "; \
 		docker run --rm --entrypoint sh agent-$$assistant -c \
-			'which tmux >/dev/null && which iptables >/dev/null && echo PASS' || echo "FAIL"; \
+			'which abduco >/dev/null && which iptables >/dev/null && echo PASS' || echo "FAIL"; \
 	done
 	@echo "\n=== Testing assistant binaries ==="
 	@printf "  claude: "; docker run --rm --entrypoint sh agent-claude -c 'which claude >/dev/null && echo PASS || echo FAIL'
@@ -33,13 +33,13 @@ test: build
 		'/entrypoint.sh & sleep 2; iptables -L OUTPUT -n 2>/dev/null | grep -q DROP && echo PASS || echo FAIL' 2>/dev/null
 	@echo "\n=== Testing privilege drop ==="
 	@printf "  runs as non-root: "; \
-	docker run --rm -e ASSISTANT_CMD="id -u" agent-claude 2>&1 | grep -q "1000" && echo "PASS" || echo "FAIL"
+	docker run --rm -e ASSISTANT_CMD="id -u" -e ABDUCO_SESSION=test agent-claude 2>&1 | grep -q "1000" && echo "PASS" || echo "FAIL"
 	@printf "  cannot modify iptables: "; \
-	docker run --rm --cap-add=NET_ADMIN -e ASSISTANT_CMD="iptables -F" agent-claude 2>&1 | grep -q "Permission denied" && echo "PASS" || echo "FAIL"
+	docker run --rm --cap-add=NET_ADMIN -e ASSISTANT_CMD="iptables -F" -e ABDUCO_SESSION=test agent-claude 2>&1 | grep -q "Permission denied" && echo "PASS" || echo "FAIL"
 	@echo "\n=== Testing entrypoint ==="
 	@printf "  runs command: "; \
 	docker run --rm --cap-add=NET_ADMIN \
-		-e ASSISTANT_CMD="echo session-ok" \
+		-e ASSISTANT_CMD="echo session-ok" -e ABDUCO_SESSION=test \
 		agent-claude 2>&1 | grep -q "session-ok" && echo "PASS" || echo "FAIL"
 	@echo "\n=== ALL TESTS COMPLETE ==="
 
@@ -49,7 +49,7 @@ test-ci: build
 	@for assistant in $(ASSISTANTS); do \
 		printf "  $$assistant: "; \
 		docker run --rm --entrypoint sh agent-$$assistant -c \
-			'which tmux >/dev/null && which iptables >/dev/null && echo PASS' || echo "FAIL"; \
+			'which abduco >/dev/null && which iptables >/dev/null && echo PASS' || echo "FAIL"; \
 	done
 	@echo "\n=== Testing assistant binaries ==="
 	@printf "  claude: "; docker run --rm --entrypoint sh agent-claude -c 'which claude >/dev/null && echo PASS || echo FAIL'

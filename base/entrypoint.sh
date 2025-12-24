@@ -47,18 +47,8 @@ apply_iptables() {
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
 # Drop privileges and run assistant as unprivileged user
-WRAPPED_CMD="sh -c '${ASSISTANT_CMD}; tmux detach'"
-
 if [ ! -t 0 ]; then
     exec su-exec agent $ASSISTANT_CMD
 fi
 
-if su-exec agent tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
-    PANE_DEAD=$(su-exec agent tmux display-message -p -t "$TMUX_SESSION" '#{pane_dead}')
-    if [ "$PANE_DEAD" = "1" ]; then
-        su-exec agent tmux respawn-pane -t "$TMUX_SESSION" "$WRAPPED_CMD"
-    fi
-    exec su-exec agent tmux attach -t "$TMUX_SESSION"
-else
-    exec su-exec agent tmux new-session -s "$TMUX_SESSION" "$WRAPPED_CMD"
-fi
+exec su-exec agent abduco -A "$ABDUCO_SESSION" $ASSISTANT_CMD
