@@ -46,6 +46,11 @@ apply_iptables() {
 # Apply network rules if we have CAP_NET_ADMIN
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
+# Change agent UID to match host for file permissions
+if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "$(id -u agent)" ]; then
+    usermod -u "$HOST_UID" agent 2>/dev/null || true
+fi
+
 # Drop privileges and run assistant as unprivileged user
 if [ ! -t 0 ]; then
     exec su-exec agent $ASSISTANT_CMD
