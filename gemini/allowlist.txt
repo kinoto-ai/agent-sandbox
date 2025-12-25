@@ -2,3 +2,5 @@
 generativelanguage.googleapis.com
 aiplatform.googleapis.com
 gemini.google.com
+oauth2.googleapis.com
+accounts.google.com
