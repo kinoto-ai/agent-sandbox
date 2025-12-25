@@ -47,8 +47,9 @@ apply_iptables() {
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
 # Change agent UID to match host for file permissions
-if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "$(id -u agent)" ]; then
-    usermod -u "$HOST_UID" agent 2>/dev/null || true
+if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
+    sed -i "s/^agent:x:1000:/agent:x:$HOST_UID:/" /etc/passwd
+    chown -R "$HOST_UID:$HOST_UID" /home/agent 2>/dev/null || true
 fi
 
 # Drop privileges and run assistant as unprivileged user
