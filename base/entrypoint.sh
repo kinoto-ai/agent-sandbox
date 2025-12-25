@@ -1,6 +1,36 @@
 #!/bin/bash
 set -e
 
+# Sync overlay changes back to source dirs on exit
+sync_overlays() {
+    echo "Syncing overlay changes..."
+    for overlay_dir in /overlay/*/upper; do
+        [ -d "$overlay_dir" ] || continue
+        name=$(basename "$(dirname "$overlay_dir")")
+        src="/mnt/lower/$name"
+        [ -d "$src" ] && rsync -a "$overlay_dir/" "$src/" 2>/dev/null || true
+    done
+}
+trap sync_overlays EXIT
+
+# Setup overlays from config file
+# Format: source:target (e.g., /mnt/lower/global:/home/agent/.claude)
+setup_overlays() {
+    [ -f /etc/kinoto/overlays.conf ] || return 0
+    while IFS=: read -r src target || [ -n "$src" ]; do
+        [[ "$src" =~ ^#.*$ || -z "$src" || -z "$target" ]] && continue
+        [ -d "$src" ] || continue
+
+        # Use source basename as overlay name
+        name=$(basename "$src")
+        mkdir -p "/overlay/$name/upper" "/overlay/$name/work" "$target"
+        mount -t overlay overlay \
+            -o "lowerdir=$src,upperdir=/overlay/$name/upper,workdir=/overlay/$name/work" \
+            "$target" 2>/dev/null || echo "Note: overlay mount failed for $target (requires privileged mode)"
+    done < /etc/kinoto/overlays.conf
+}
+setup_overlays
+
 # Apply iptables rules (AI APIs only)
 apply_iptables() {
     iptables -F OUTPUT 2>/dev/null || true
@@ -52,6 +82,11 @@ if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
     groupmod -g "$HOST_UID" agent
     chown -R agent:agent /home/agent 2>/dev/null || true
 fi
+
+# Run drop-in init scripts
+for script in /etc/kinoto/init.d/*.sh; do
+    [ -f "$script" ] && source "$script"
+done
 
 # Keep container alive
 exec tail -f /dev/null
