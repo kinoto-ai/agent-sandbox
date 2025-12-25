@@ -10,7 +10,4 @@ RUN apk add --no-cache nodejs npm python3 make g++ \
     && rm -rf /root/.npm /tmp/*
 
 COPY allowlist.txt /etc/kinoto/allowlist.txt
-
-# Overlay mounts for settings persistence
-RUN echo "/mnt/lower/global:/home/agent/.gemini" >> /etc/kinoto/overlays.conf \
-    && echo "/mnt/lower/local:/workspace/.gemini" >> /etc/kinoto/overlays.conf
+COPY init.sh /etc/kinoto/init.d/gemini.sh

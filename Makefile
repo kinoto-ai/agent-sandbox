@@ -37,29 +37,21 @@ test: build
 	@printf "  cannot modify iptables: "; \
 	docker run --rm --cap-add=NET_ADMIN --entrypoint sh agent-claude -c \
 		'/entrypoint.sh & sleep 1; su-exec agent iptables -F 2>&1' | grep -q "Permission denied" && echo "PASS" || echo "FAIL"
-	@echo "\n=== Testing overlay config ==="
-	@printf "  overlays.conf exists: "; \
-	docker run --rm --entrypoint sh agent-claude -c \
-		'grep -q "/home/agent/.claude" /etc/kinoto/overlays.conf && echo PASS || echo FAIL'
+	@echo "\n=== Testing init.d scripts ==="
 	@printf "  init.d script exists: "; \
 	docker run --rm --entrypoint sh agent-claude -c \
 		'test -f /etc/kinoto/init.d/claude.sh && echo PASS || echo FAIL'
-	@printf "  rsync installed: "; \
-	docker run --rm --entrypoint sh agent-claude -c 'which rsync >/dev/null && echo PASS || echo FAIL'
-	@echo "\n=== Testing overlays (requires --privileged) ==="
-	@printf "  overlay mount: "; \
-	docker run --rm --privileged \
-		-v $$(mktemp -d):/mnt/lower/global \
+	@echo "\n=== Testing copy-in ==="
+	@printf "  global settings copy: "; \
+	TMPDIR=$$(mktemp -d) && echo "test" > $$TMPDIR/testfile && \
+	docker run --rm \
+		-v $$TMPDIR:/mnt/lower/global:ro \
 		--entrypoint sh agent-claude -c \
-		'/entrypoint.sh & sleep 2; mount | grep -q "overlay on /home/agent/.claude" && echo PASS || echo FAIL'
-	@printf "  overlay write: "; \
-	docker run --rm --privileged \
-		-v $$(mktemp -d):/mnt/lower/global \
-		--entrypoint sh agent-claude -c \
-		'/entrypoint.sh & sleep 2; touch /home/agent/.claude/test-file && test -f /overlay/global/upper/test-file && echo PASS || echo FAIL'
-	@printf "  init.d scripts: "; \
+		'/entrypoint.sh & sleep 2; test -f /home/agent/.claude/testfile && echo PASS || echo FAIL'; \
+	rm -rf $$TMPDIR
+	@printf "  credentials copy: "; \
 	TMPFILE=$$(mktemp) && echo '{"test":true}' > $$TMPFILE && \
-	docker run --rm --privileged \
+	docker run --rm \
 		-v $$TMPFILE:/mnt/files/claude.json:ro \
 		--entrypoint sh agent-claude -c \
 		'/entrypoint.sh & sleep 2; test -f /home/agent/.claude.json && echo PASS || echo FAIL'; \
