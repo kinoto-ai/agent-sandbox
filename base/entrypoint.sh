@@ -46,10 +46,11 @@ apply_iptables() {
 # Apply network rules if we have CAP_NET_ADMIN
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
-# Change agent UID to match host for file permissions
+# Change agent UID/GID to match host for file permissions
 if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
-    sed -i "s/^agent:x:1000:/agent:x:$HOST_UID:/" /etc/passwd
-    chown -R "$HOST_UID:$HOST_UID" /home/agent 2>/dev/null || true
+    usermod -u "$HOST_UID" agent
+    groupmod -g "$HOST_UID" agent
+    chown -R agent:agent /home/agent 2>/dev/null || true
 fi
 
 # Keep container running
