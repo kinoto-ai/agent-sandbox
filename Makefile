@@ -20,7 +20,7 @@ test: build
 	@for assistant in $(ASSISTANTS); do \
 		printf "  $$assistant: "; \
 		docker run --rm --entrypoint sh agent-$$assistant -c \
-			'which abduco >/dev/null && which iptables >/dev/null && echo PASS' || echo "FAIL"; \
+			'which iptables >/dev/null && echo PASS' || echo "FAIL"; \
 	done
 	@echo "\n=== Testing assistant binaries ==="
 	@printf "  claude: "; docker run --rm --entrypoint sh agent-claude -c 'which claude >/dev/null && echo PASS || echo FAIL'
@@ -37,10 +37,6 @@ test: build
 	@printf "  cannot modify iptables: "; \
 	docker run --rm --cap-add=NET_ADMIN --entrypoint sh agent-claude -c \
 		'/entrypoint.sh & sleep 1; su-exec agent iptables -F 2>&1' | grep -q "Permission denied" && echo "PASS" || echo "FAIL"
-	@echo "\n=== Testing abduco session ==="
-	@printf "  runs command: "; \
-	docker run --rm --entrypoint sh agent-claude -c \
-		'su-exec agent abduco -A test echo session-ok 2>&1' | grep -q "session-ok" && echo "PASS" || echo "FAIL"
 	@echo "\n=== ALL TESTS COMPLETE ==="
 
 # CI tests (no CAP_NET_ADMIN)
@@ -49,7 +45,7 @@ test-ci: build
 	@for assistant in $(ASSISTANTS); do \
 		printf "  $$assistant: "; \
 		docker run --rm --entrypoint sh agent-$$assistant -c \
-			'which abduco >/dev/null && which iptables >/dev/null && echo PASS' || echo "FAIL"; \
+			'which iptables >/dev/null && echo PASS' || echo "FAIL"; \
 	done
 	@echo "\n=== Testing assistant binaries ==="
 	@printf "  claude: "; docker run --rm --entrypoint sh agent-claude -c 'which claude >/dev/null && echo PASS || echo FAIL'
