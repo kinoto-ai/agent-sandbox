@@ -93,5 +93,6 @@ for script in /etc/kinoto/init.d/*.sh; do
     [ -f "$script" ] && source "$script"
 done
 
-# Keep container alive
-exec tail -f /dev/null
+# Keep container alive - don't use exec to preserve trap
+tail -f /dev/null &
+wait
