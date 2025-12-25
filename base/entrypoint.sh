@@ -53,5 +53,5 @@ if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
     chown -R agent:agent /home/agent 2>/dev/null || true
 fi
 
-# Run the assistant as the agent user (PID 1)
-exec su-exec agent "$@"
+# Keep container alive
+exec tail -f /dev/null
