@@ -33,14 +33,14 @@ test: build
 		'/entrypoint.sh & sleep 2; iptables -L OUTPUT -n 2>/dev/null | grep -q DROP && echo PASS || echo FAIL' 2>/dev/null
 	@echo "\n=== Testing privilege drop ==="
 	@printf "  runs as non-root: "; \
-	docker run --rm -e ASSISTANT_CMD="id -u" -e ABDUCO_SESSION=test agent-claude 2>&1 | grep -q "1000" && echo "PASS" || echo "FAIL"
+	docker run --rm --entrypoint sh agent-claude -c 'su-exec agent id -u' 2>&1 | grep -q "1000" && echo "PASS" || echo "FAIL"
 	@printf "  cannot modify iptables: "; \
-	docker run --rm --cap-add=NET_ADMIN -e ASSISTANT_CMD="iptables -F" -e ABDUCO_SESSION=test agent-claude 2>&1 | grep -q "Permission denied" && echo "PASS" || echo "FAIL"
-	@echo "\n=== Testing entrypoint ==="
+	docker run --rm --cap-add=NET_ADMIN --entrypoint sh agent-claude -c \
+		'/entrypoint.sh & sleep 1; su-exec agent iptables -F 2>&1' | grep -q "Permission denied" && echo "PASS" || echo "FAIL"
+	@echo "\n=== Testing abduco session ==="
 	@printf "  runs command: "; \
-	docker run --rm --cap-add=NET_ADMIN \
-		-e ASSISTANT_CMD="echo session-ok" -e ABDUCO_SESSION=test \
-		agent-claude 2>&1 | grep -q "session-ok" && echo "PASS" || echo "FAIL"
+	docker run --rm --entrypoint sh agent-claude -c \
+		'su-exec agent abduco -A test echo session-ok 2>&1' | grep -q "session-ok" && echo "PASS" || echo "FAIL"
 	@echo "\n=== ALL TESTS COMPLETE ==="
 
 # CI tests (no CAP_NET_ADMIN)

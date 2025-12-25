@@ -52,9 +52,5 @@ if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
     chown -R "$HOST_UID:$HOST_UID" /home/agent 2>/dev/null || true
 fi
 
-# Drop privileges and run assistant as unprivileged user
-if [ ! -t 0 ]; then
-    exec su-exec agent $ASSISTANT_CMD
-fi
-
-exec su-exec agent abduco -A "$ABDUCO_SESSION" $ASSISTANT_CMD
+# Keep container running
+exec tail -f /dev/null

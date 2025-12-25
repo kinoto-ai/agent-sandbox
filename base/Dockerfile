@@ -21,7 +21,4 @@ RUN mkdir -p /etc/kinoto/allowlist.d
 # Terminal settings
 ENV TERM=xterm-256color
 
-# Default command (override in derived images)
-ENV ASSISTANT_CMD="sh"
-
 ENTRYPOINT ["/entrypoint.sh"]
