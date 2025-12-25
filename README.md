@@ -8,7 +8,6 @@ These containers provide a sandboxed environment where AI agents can only commun
 
 **Key features:**
 - Network isolation: Only AI API endpoints are allowed (configurable allowlist)
-- Session persistence: tmux keeps sessions alive across disconnects
 - Minimal footprint: Alpine-based images
 - Extensible: Create custom agent images by extending the base
 
@@ -16,7 +15,7 @@ These containers provide a sandboxed environment where AI agents can only commun
 
 | Image | Description |
 |-------|-------------|
-| `ghcr.io/kinoto-ai/agent-base` | Base image with sandbox tools (tmux, iptables) |
+| `ghcr.io/kinoto-ai/agent-base` | Base image with sandbox tools (iptables, su-exec) |
 | `ghcr.io/kinoto-ai/agent-claude` | Claude Code CLI |
 | `ghcr.io/kinoto-ai/agent-gemini` | Gemini CLI |
 | `ghcr.io/kinoto-ai/agent-codex` | OpenAI Codex CLI |
@@ -81,9 +80,6 @@ RUN npm install -g your-agent-cli
 
 # Add your API allowlist
 COPY allowlist.txt /etc/kinoto/allowlist.txt
-
-# Set the command to run
-ENV ASSISTANT_CMD="your-agent-cli"
 ```
 
 Create an `allowlist.txt` with your agent's API endpoints:
@@ -123,16 +119,22 @@ The entrypoint script configures iptables rules:
 4. Allow DNS (port 53)
 5. Resolve each domain in allowlists and allow HTTPS/HTTP to those IPs
 
-### Session Management
+### Running the Assistant
 
-When running with a TTY (`-it`), the container starts a tmux session. This allows:
-- Detaching/reattaching to sessions
-- Session persistence if the terminal disconnects
-- Multiple windows within a session
+The container stays alive after applying iptables rules. Run the assistant via `docker exec`:
+
+```bash
+# Start the container
+docker run -d --name my-agent --cap-add=NET_ADMIN \
+  -e ANTHROPIC_API_KEY=sk-... \
+  ghcr.io/kinoto-ai/agent-claude
+
+# Run the assistant as the unprivileged agent user
+docker exec -it -u agent my-agent claude
+```
 
 Environment variables:
-- `TMUX_SESSION`: Session name (default: `kinoto`)
-- `ASSISTANT_CMD`: Command to run in the session
+- `HOST_UID`: Set to match host user UID for file permissions (default: `1000`)
 
 ## Development
 
