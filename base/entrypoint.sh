@@ -17,6 +17,11 @@ trap sync_overlays EXIT
 # Format: source:target (e.g., /mnt/lower/global:/home/agent/.claude)
 setup_overlays() {
     [ -f /etc/kinoto/overlays.conf ] || return 0
+
+    # Use tmpfs for overlay upper/work dirs (required for overlayfs compatibility)
+    mkdir -p /overlay
+    mount -t tmpfs tmpfs /overlay 2>/dev/null || return 0
+
     while IFS=: read -r src target || [ -n "$src" ]; do
         [[ "$src" =~ ^#.*$ || -z "$src" || -z "$target" ]] && continue
         [ -d "$src" ] || continue
