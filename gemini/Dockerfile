@@ -10,4 +10,3 @@ RUN apk add --no-cache nodejs npm python3 make g++ \
     && rm -rf /root/.npm /tmp/*
 
 COPY allowlist.txt /etc/kinoto/allowlist.txt
-COPY init.sh /etc/kinoto/init.d/gemini.sh

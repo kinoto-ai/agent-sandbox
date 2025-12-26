@@ -9,4 +9,3 @@ RUN apk add --no-cache nodejs npm \
     && rm -rf /root/.npm /tmp/*
 
 COPY allowlist.txt /etc/kinoto/allowlist.txt
-COPY init.sh /etc/kinoto/init.d/codex.sh

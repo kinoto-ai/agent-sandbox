@@ -53,11 +53,6 @@ if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
     chown -R agent:agent /home/agent 2>/dev/null || true
 fi
 
-# Run drop-in init scripts
-for script in /etc/kinoto/init.d/*.sh; do
-    [ -f "$script" ] && source "$script"
-done
-
 # Keep container alive - don't use exec to preserve trap
 tail -f /dev/null &
 wait

@@ -18,9 +18,6 @@ RUN chmod +x /entrypoint.sh
 # User can mount allowlists at /etc/kinoto/allowlist.d/
 RUN mkdir -p /etc/kinoto/allowlist.d
 
-# Drop-in init scripts (sourced by entrypoint)
-RUN mkdir -p /etc/kinoto/init.d
-
 # Terminal settings
 ENV TERM=xterm-256color
 

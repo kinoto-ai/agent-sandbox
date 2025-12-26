@@ -37,25 +37,6 @@ test: build
 	@printf "  cannot modify iptables: "; \
 	docker run --rm --cap-add=NET_ADMIN --entrypoint sh agent-claude -c \
 		'/entrypoint.sh & sleep 1; su-exec agent iptables -F 2>&1' | grep -q "Permission denied" && echo "PASS" || echo "FAIL"
-	@echo "\n=== Testing init.d scripts ==="
-	@printf "  init.d script exists: "; \
-	docker run --rm --entrypoint sh agent-claude -c \
-		'test -f /etc/kinoto/init.d/claude.sh && echo PASS || echo FAIL'
-	@echo "\n=== Testing copy-in ==="
-	@printf "  global settings copy: "; \
-	TMPDIR=$$(mktemp -d) && echo "test" > $$TMPDIR/testfile && \
-	docker run --rm \
-		-v $$TMPDIR:/mnt/lower/global:ro \
-		--entrypoint sh agent-claude -c \
-		'/entrypoint.sh & sleep 2; test -f /home/agent/.claude/testfile && echo PASS || echo FAIL'; \
-	rm -rf $$TMPDIR
-	@printf "  credentials copy: "; \
-	TMPFILE=$$(mktemp) && echo '{"test":true}' > $$TMPFILE && \
-	docker run --rm \
-		-v $$TMPFILE:/mnt/files/claude.json:ro \
-		--entrypoint sh agent-claude -c \
-		'/entrypoint.sh & sleep 2; test -f /home/agent/.claude.json && echo PASS || echo FAIL'; \
-	rm -f $$TMPFILE
 	@echo "\n=== ALL TESTS COMPLETE ==="
 
 # CI tests (no CAP_NET_ADMIN)
