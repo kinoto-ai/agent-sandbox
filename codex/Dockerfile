@@ -4,7 +4,7 @@ FROM ${BASE_IMAGE}
 LABEL com.kinoto.agent.name="codex"
 
 # Install OpenAI Codex CLI
-RUN apk add --no-cache nodejs npm \
+RUN apk add --no-cache nodejs npm socat \
     && npm install -g @openai/codex \
     && rm -rf /root/.npm /tmp/*
 
