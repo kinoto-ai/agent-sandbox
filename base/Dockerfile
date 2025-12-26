@@ -7,7 +7,8 @@ RUN apk add --no-cache \
     ip6tables \
     bash \
     su-exec \
-    shadow
+    shadow \
+    git
 
 # Create unprivileged user for running assistant
 RUN adduser -D -h /home/agent agent
