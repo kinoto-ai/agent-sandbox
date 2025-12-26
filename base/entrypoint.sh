@@ -46,6 +46,11 @@ apply_iptables() {
 # Apply network rules if we have CAP_NET_ADMIN
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
+# Run init.d scripts
+for script in /etc/kinoto/init.d/*.sh; do
+    [ -x "$script" ] && "$script"
+done
+
 # Change agent UID/GID to match host for file permissions
 if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
     usermod -u "$HOST_UID" agent
