@@ -14,12 +14,8 @@ RUN apk add --no-cache \
 # Create unprivileged user for running assistant
 RUN adduser -D -h /home/agent agent
 
-# Setup local bin directory for user-installable packages
-RUN mkdir -p /home/agent/.local/bin && \
-    chown -R agent:agent /home/agent/.local
-
-# Add local bin to PATH (allows agent to install/update packages)
-ENV PATH="/home/agent/.local/bin:$PATH"
+# Make /usr/local writable by agent (allows self-update of npm packages)
+RUN chown -R agent:agent /usr/local
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
