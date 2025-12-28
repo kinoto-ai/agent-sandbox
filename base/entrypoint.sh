@@ -24,6 +24,9 @@ apply_iptables() {
     ip6tables -A OUTPUT -p udp --dport 53 -j ACCEPT
     ip6tables -A OUTPUT -p tcp --dport 53 -j ACCEPT
 
+    # Allow host.docker.internal for local connections
+    iptables -A OUTPUT -d host.docker.internal -p tcp --dport 19400 -j ACCEPT 2>/dev/null || true
+
     # Resolve and allow hosts from allowlists
     for allowlist in /etc/kinoto/allowlist.txt /etc/kinoto/allowlist.d/*.txt; do
         [ -f "$allowlist" ] || continue
