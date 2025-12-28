@@ -3,10 +3,12 @@ FROM ${BASE_IMAGE}
 
 LABEL com.kinoto.agent.name="codex"
 
-# Install OpenAI Codex CLI (agent can self-update via /usr/local)
-RUN apk add --no-cache nodejs npm \
-    && npm install -g @openai/codex \
-    && rm -rf /root/.npm /tmp/*
+# Install OpenAI Codex CLI as agent user (can self-update)
+RUN apk add --no-cache nodejs npm
+USER agent
+RUN npm install -g @openai/codex
+USER root
+RUN rm -rf /tmp/*
 
 COPY allowlist.txt /etc/kinoto/allowlist.txt
 COPY init.d/ /etc/kinoto/init.d/

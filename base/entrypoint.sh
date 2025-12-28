@@ -46,9 +46,9 @@ apply_iptables() {
 # Apply network rules if we have CAP_NET_ADMIN
 apply_iptables 2>/dev/null || echo "Note: iptables requires CAP_NET_ADMIN"
 
-# Run init.d scripts
+# Run init.d scripts as agent
 for script in /etc/kinoto/init.d/*.sh; do
-    [ -x "$script" ] && "$script"
+    [ -x "$script" ] && su-exec agent "$script"
 done
 
 # Change agent UID/GID to match host for file permissions
@@ -58,5 +58,5 @@ if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
     chown -R agent:agent /home/agent 2>/dev/null || true
 fi
 
-# Run the command passed to docker run
-exec "$@"
+# Run the command passed to docker run as agent
+exec su-exec agent "$@"
