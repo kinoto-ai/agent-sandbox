@@ -58,6 +58,5 @@ if [ -n "$HOST_UID" ] && [ "$HOST_UID" != "1000" ]; then
     chown -R agent:agent /home/agent 2>/dev/null || true
 fi
 
-# Keep container alive - don't use exec to preserve trap
-tail -f /dev/null &
-wait
+# Run the command passed to docker run
+exec "$@"
