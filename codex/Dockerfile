@@ -12,4 +12,4 @@ RUN rm -rf /tmp/*
 
 COPY allowlist.txt /etc/kinoto/allowlist.txt
 COPY init.d/ /etc/kinoto/init.d/
-RUN chmod +x /etc/kinoto/init.d/*.sh
+RUN chmod 755 /etc/kinoto/init.d/*.sh
