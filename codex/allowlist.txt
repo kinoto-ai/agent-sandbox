@@ -8,3 +8,6 @@ auth.openai.com
 # GitHub
 github.com
 api.github.com
+raw.githubusercontent.com
+objects.githubusercontent.com
+codeload.githubusercontent.com
