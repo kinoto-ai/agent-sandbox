@@ -8,3 +8,7 @@ api.claude.ai
 api.statsig.com
 statsigapi.net
 api.statsigapi.net
+
+# GitHub
+github.com
+api.github.com

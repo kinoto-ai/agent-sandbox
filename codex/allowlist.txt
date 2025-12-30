@@ -4,3 +4,7 @@ platform.openai.com
 chatgpt.com
 chat.openai.com
 auth.openai.com
+
+# GitHub
+github.com
+api.github.com

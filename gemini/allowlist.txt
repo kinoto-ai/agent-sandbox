@@ -4,3 +4,7 @@ aiplatform.googleapis.com
 gemini.google.com
 oauth2.googleapis.com
 accounts.google.com
+
+# GitHub
+github.com
+api.github.com
