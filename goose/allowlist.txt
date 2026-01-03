@@ -1,8 +1,3 @@
-# AI API allowlist (Goose - supports multiple providers)
-api.openai.com
-platform.openai.com
-api.anthropic.com
-
 # GitHub
 github.com
 api.github.com
