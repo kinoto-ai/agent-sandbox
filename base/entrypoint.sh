@@ -27,9 +27,13 @@ apply_iptables() {
     # Allow host.docker.internal for local connections
     # Always allow MCP port (19400), plus any user-specified ports via ALLOWED_PORTS
     if host_ip=$(getent ahosts host.docker.internal 2>/dev/null | awk '{print $1}' | head -1); then
+        echo "Allowing ports to host.docker.internal ($host_ip): 19400 ${ALLOWED_PORTS:-}" >&2
         for port in 19400 ${ALLOWED_PORTS:-}; do
+            echo "  - Adding rule for port $port" >&2
             iptables -A OUTPUT -d "$host_ip" -p tcp --dport "$port" -j ACCEPT
         done
+    else
+        echo "Warning: host.docker.internal not resolvable, skipping local port rules" >&2
     fi
 
     # Resolve and allow hosts from allowlists
