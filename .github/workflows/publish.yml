@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        assistant: [claude, gemini, codex]
+        assistant: [claude, gemini, codex, goose]
     permissions:
       contents: read
       packages: write

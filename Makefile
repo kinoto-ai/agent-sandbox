@@ -1,6 +1,6 @@
 .PHONY: build build-base test test-ci clean
 
-ASSISTANTS := claude gemini codex
+ASSISTANTS := claude gemini codex goose
 
 # Build base image
 build-base:
@@ -26,6 +26,7 @@ test: build
 	@printf "  claude: "; docker run --rm --entrypoint sh agent-claude -c 'which claude >/dev/null && echo PASS || echo FAIL'
 	@printf "  gemini: "; docker run --rm --entrypoint sh agent-gemini -c 'which gemini >/dev/null && echo PASS || echo FAIL'
 	@printf "  codex: "; docker run --rm --entrypoint sh agent-codex -c 'which codex >/dev/null && echo PASS || echo FAIL'
+	@printf "  goose: "; docker run --rm --entrypoint sh agent-goose -c 'which goose >/dev/null && echo PASS || echo FAIL'
 	@echo "\n=== Testing iptables (requires CAP_NET_ADMIN) ==="
 	@printf "  iptables rules: "; \
 	docker run --rm --cap-add=NET_ADMIN \
@@ -51,6 +52,7 @@ test-ci: build
 	@printf "  claude: "; docker run --rm --entrypoint sh agent-claude -c 'which claude >/dev/null && echo PASS || echo FAIL'
 	@printf "  gemini: "; docker run --rm --entrypoint sh agent-gemini -c 'which gemini >/dev/null && echo PASS || echo FAIL'
 	@printf "  codex: "; docker run --rm --entrypoint sh agent-codex -c 'which codex >/dev/null && echo PASS || echo FAIL'
+	@printf "  goose: "; docker run --rm --entrypoint sh agent-goose -c 'which goose >/dev/null && echo PASS || echo FAIL'
 	@echo "\n=== Skipping iptables test (CI mode) ==="
 	@echo "\n=== ALL TESTS COMPLETE ==="
 
